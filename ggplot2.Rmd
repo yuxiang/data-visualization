@@ -60,6 +60,12 @@ gg
 
 # 图形语法
 
+
+
+
+
+
+
 ggplot2的核心理念是将绘图与数据分离，数据相关的绘图与数据无关的绘图分离，是按图层作图，有利于结构化思维，同时它保有命令式作图的调整函数，使其更具灵活性，绘制出来的图形美观，同时避免繁琐细节。ggplot2可以通过底层组件构造前所未有的图形，你所受到的限制只是你的想象力。
 
 ggplot2根据Leland Wilkinson的著作《Grammar of Graphics》，定义了一套图形语法：把图形拆分为一些互相独立并且可以自由组合的成分，并能以许多不同的方式组合起来，这构成了一个图层，通过不断的叠加图层，可以画出你能想象出来的所有图形，重点是，图层的叠加与你的分析思路是一致的，你不用先把问题想清楚了再来想怎么画出来，而是想到什么叠加一个图层上去就好了。
@@ -68,14 +74,30 @@ ggplot2根据Leland Wilkinson的著作《Grammar of Graphics》，定义了一�
 
 下面看下ggplot2的基本要素：
 
-* 数据（Data）和映射（Mapping）
-* 几何对象（Geometric）
-* 标尺（Scale）
-* 统计变换（Statistics）
-* 坐标系统（Coordinante）
+* 数据（Data）和映射（Mapping），最基础的部分是你想要可视化的以及一系列将数据中的变量对应到图形属性的；
+* 几何对象（Geometric），代表你在图中实际看到的图形元素，如点、线、多边形等；
+* 标尺（Scale），将数据的取值映射到图形空间，例如用颜色、大小或形状来表示不同的取值。展现标度的常见做法是绘制图例和坐标轴--它们实际上是从图形到数据的一个映射，使读者可以从图形中读取原始的数据。标度负责控制映射后图形属性的显示方式。具体形式上来看是图例和坐标刻度。Scale和Mapping是紧密相关的概念；
+* 统计变换（Statistics），对数据进行的某种统计计算。例如，对二元散点图加上一条回归线或者置信区间登记，将数据分组计数以创建直方图，或将一个二维的关系用线性模型进行解释。统计变换是可选的，但通常非常有用；
+* 坐标系统（Coordinate），描述了数据是如何映射到图形所在的平面的，它同时提供了看图所需要的坐标轴和网格线，我们通常使用的是笛卡尔坐标系，但也可以将其变换为其他类型，如极坐标和地图投影；
 * 图层（Layer）
-* 分面（Facet）
+* 分面（Facet），如何将数据分解为各个子集，以及如何对子集作图并联合进行展示。分面也叫条件作图或网格作图。条件绘图，将数据按某种方式分组，然后分别绘图。分面就是控制分组绘图的方法和排列形式。
 * 主题（Theme）
+
+
+
+组件 -> 图层 -> 图形
+
+### 图层
+
+一个图层(Layer)：
+1. 从 **数据** 到 **几何对象** （geometric object，缩写为geom，包括点、线、条形等）的 **图形属性** （aesthetic attributes，缩写为aes，包括颜色、形状、大小等）的一个映射。
+2. 图形中还可能包含数据的 **统计变换** （statistical transformation，缩写为stats）
+3. 最后绘制在某个 **坐标系** （coordinate system，缩写为soord）中
+4. **分面** （facet，指将绘图窗口划分为若干个子窗口）则可以用来生成数据不同子集的图形。
+
+[ggplot2在线帮助文档](http://had.co.nz/ggplot2)
+
+
 
 下面将以ggplot2自带的钻石数据集为例，对这些基本要素进行介绍。
 
@@ -92,7 +114,7 @@ small <- diamonds[sample(nrow(diamonds), 1000), ]
 ```
 
 
-作图实际上是把 **数据（data）** 中的变量 **映射(Mapping)** 到图形属性上
+作图就是把 **数据（data）** 中的变量 **映射(Mapping)** 到图形属性上
 
 ```{r}
 # 打开一个画布，准备好数据
@@ -128,7 +150,7 @@ gg
 
 ggplot2支持图层，通常把不同的图层中共用的映射提供给ggplot函数，而某一几何对象才需要的映射参数提供给geom_xxx函数。
 
-这一小节我们来看一下各种常用的几何对象。
+下面看下几种常用的几何对象。
 
 ### 直方图
 直方图最容易，提供一个x变量，画出数据的分布。
@@ -229,7 +251,10 @@ ggplot(small, aes(x=carat, y=price))+geom_point()+scale_y_log10()+stat_smooth()
 ```
 
 这里就不按颜色、切工来分了，不然ggplot会按不同的分类变量分别做回归，图就很乱，如果我们需要这样做，我们可以使用分面，这个将在后面介绍。
-这里，aes所提供的参数，就通过ggplot提供，而不是提供给geom_point，因为ggplot里的参数，相当于全局变量，geom_point()和stat_smooth()都知道x,y的映射，如果只提供给geom_point()，则相当于是局部变量，geom_point知道这种映射，而stat_smooth不知道，当然你再给stat_smooth也提供x,y的映射，不过共用的映射，还是提供给ggplot好。 ggplot2提供了多种统计变换方式：
+
+这里，aes所提供的参数，就通过ggplot提供，而不是提供给geom_point，因为ggplot里的参数，相当于全局变量，geom_point()和stat_smooth()都知道x,y的映射，如果只提供给geom_point()，则相当于是局部变量，geom_point知道这种映射，而stat_smooth不知道，当然你再给stat_smooth也提供x,y的映射，不过共用的映射，还是提供给ggplot好。
+
+ggplot2提供了多种统计变换方式：
 stat_abline       stat_contour      stat_identity     stat_summary
 stat_bin          stat_density      stat_qq           stat_summary2d
 stat_bin2d        stat_density2d    stat_quantile     stat_summary_hex
@@ -241,6 +266,7 @@ stat_boxplot      stat_hline        stat_sum          stat_ydensity
 
 
 ## 坐标系统（Coordinante）
+
 坐标系统控制坐标轴，可以进行变换，例如XY轴翻转，笛卡尔坐标和极坐标转换，以满足我们的各种需求。
 坐标轴翻转由coord_flip()实现
 ```{r}
@@ -267,74 +293,67 @@ ggplot(small)+geom_bar(aes(x=clarity, fill=cut))+coord_polar()
 ## 图层（Layer）
 photoshop流行的原因在于PS 3.0时引入图层的概念，ggplot的牛B之处在于使用+号来叠加图层，这堪称是泛型编程的典范。 在前面散点图上，我们已经见识过，加上了一个回归线拟合的图层。
 有了图层的概念，使用ggplot画起图来，就更加得心应手。
-做为图层的一个很好的例子是
-[蝙蝠侠logo](http://guangchuangyu.github.io/2011/08/the-batman-equation/)
-，batman logo由6个函数组成，在下面的例子中，我先画第一个函数，之后再加一个图层画第二个函数，不断重复这一过程，直到六个函数全部画好。
+做为图层的一个很好的例子是 [蝙蝠侠logo](http://guangchuangyu.github.io/2011/08/the-batman-equation/)，batman logo由6个函数组成，在下面的例子中，我先画第一个函数，之后再加一个图层画第二个函数，不断重复这一过程，直到六个函数全部画好。
 
 ```{r}
 require(ggplot2)
 library(grid)
+
+x1 <- c(seq(3, 7, 0.001), seq(-7, -3, 0.001))
 f1 <- function(x) {
-    y1 <- 3*sqrt(1-(x/7)^2)
-    y2 <- -3*sqrt(1-(x/7)^2)
-    y <- c(y1,y2)
-    d <- data.frame(x=x,y=y)
-    d <- d[d$y > -3*sqrt(33)/7,]
+    y1 <- 3 * sqrt(1 - (x/7)^2)
+    y2 <- -3 * sqrt(1 - (x/7)^2)
+    y <- c(y1, y2)
+    d <- data.frame(x = x, y = y)
+    d <- d[d$y > -3 * sqrt(33)/7, ]
     return(d)
 }
- 
-x1 <- c(seq(3, 7, 0.001), seq(-7, -3, 0.001))
 d1 <- f1(x1)
-p1 <- ggplot(d1,aes(x,y)) + geom_point(color="red") +xlab("") + ylab("") + theme_bw()
- 
-x2 <- seq(-4,4, 0.001)
-y2 <- abs(x2/2)-(3*sqrt(33)-7)*x2^2/112-3 + sqrt(1-(abs(abs(x2)-2)-1)^2)
-d2 <- data.frame(x2=x2, y2=y2)
-p2 <- p1 + geom_point(data=d2, aes(x=x2,y=y2), color="yellow")
- 
-x3 <- c(seq(0.75,1,0.001), seq(-1,-0.75,0.001))
-y3 <- 9-8*abs(x3)
-d3 <- data.frame(x3=x3, y3=y3)
-p3 <- p2+geom_point(data=d3, aes(x=x3,y=y3), color="green")
- 
-x4 <- c(seq(0.5,0.75,0.001), seq(-0.75,-0.5,0.001))
-y4 <- 3*abs(x4)+0.75
-d4 <- data.frame(x4=x4,y4=y4)
-p4 <- p3+geom_point(data=d4, aes(x=x4,y=y4), color="steelblue")
-  
-x5 <- seq(-0.5,0.5,0.001)
-y5 <- rep(2.25,length(x5))
-d5 <- data.frame(x5=x5,y5=y5)
-p5 <- p4+geom_point(data=d5, aes(x=x5,y=y5))
- 
-x6 <- c(seq(-3,-1,0.001), seq(1,3,0.001))
-y6 <- 6 * sqrt(10)/7 +
-    (1.5 - 0.5 * abs(x6)) * sqrt(abs(abs(x6)-1)/(abs(x6)-1)) -
-    6 * sqrt(10) * sqrt(4-(abs(x6)-1)^2)/14
-d6 <- data.frame(x6=x6,y6=y6)
-p6 <- p5+geom_point(data=d6,aes(x=x6,y=y6), colour="blue")
-multiplot <- function (..., plotlist = NULL, cols = 1, layout = NULL) {
+p1 <- ggplot(d1, aes(x, y)) + geom_point(color = "red") + xlab("") + ylab("") + theme_bw()
+
+x2 <- seq(-4, 4, 0.001)
+y2 <- abs(x2/2) - (3 * sqrt(33) - 7) * x2^2/112 - 3 + sqrt(1 - (abs(abs(x2) - 2) - 1)^2)
+d2 <- data.frame(x2 = x2, y2 = y2)
+p2 <- p1 + geom_point(data = d2, aes(x = x2, y = y2), color = "yellow")
+
+x3 <- c(seq(0.75, 1, 0.001), seq(-1, -0.75, 0.001))
+y3 <- 9 - 8 * abs(x3)
+d3 <- data.frame(x3 = x3, y3 = y3)
+p3 <- p2 + geom_point(data = d3, aes(x = x3, y = y3), color = "green")
+
+x4 <- c(seq(0.5, 0.75, 0.001), seq(-0.75, -0.5, 0.001))
+y4 <- 3 * abs(x4) + 0.75
+d4 <- data.frame(x4 = x4, y4 = y4)
+p4 <- p3 + geom_point(data = d4, aes(x = x4, y = y4), color = "steelblue")
+
+x5 <- seq(-0.5, 0.5, 0.001)
+y5 <- rep(2.25, length(x5))
+d5 <- data.frame(x5 = x5, y5 = y5)
+p5 <- p4 + geom_point(data = d5, aes(x = x5, y = y5))
+
+x6 <- c(seq(-3, -1, 0.001), seq(1, 3, 0.001))
+y6 <- 6 * sqrt(10)/7 + (1.5 - 0.5 * abs(x6)) * sqrt(abs(abs(x6) - 1)/(abs(x6) - 1)) - 6 * sqrt(10) * sqrt(4 - (abs(x6) - 1)^2)/14
+d6 <- data.frame(x6 = x6, y6 = y6)
+p6 <- p5 + geom_point(data = d6, aes(x = x6, y = y6), colour = "blue")
+
+multiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
     plots <- c(list(...), plotlist)
     numPlots = length(plots)
     if (is.null(layout)) {
-        layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-            ncol = cols, nrow = ceiling(numPlots/cols))
+        layout <- matrix(seq(1, cols * ceiling(numPlots/cols)), ncol = cols, nrow = ceiling(numPlots/cols))
     }
     if (numPlots == 1) {
         print(plots[[1]])
-    }
-    else {
+    } else {
         grid.newpage()
-        pushViewport(viewport(layout = grid.layout(nrow(layout),
-            ncol(layout))))
+        pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
         for (i in 1:numPlots) {
             matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-            print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                layout.pos.col = matchidx$col))
+            print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row, layout.pos.col = matchidx$col))
         }
     }
 }
-multiplot(p1,p2,p3,p4,p5,p6, cols=2)
+multiplot(p1, p2, p3, p4, p5, p6, cols = 2)
 
 ```
 
@@ -455,125 +474,12 @@ print(p)
 
 
 
-组件 -> 图层 -> 图形
-
-### 组件
-* 数据(Data)和映射(Mapping)，最基础的部分是你想要可视化的以及一系列将数据中的变量对应到图形属性的；
-* 几何对象(Geometric)，代表你在图中实际看到的图形元素，如点、线、多边形等；
-* **统计变换** (Statistics)，对数据进行的某种统计计算。例如，对二元散点图加上一条回归线或者置信区间登记，将数据分组计数以创建直方图，或将一个二维的关系用线性模型进行解释。统计变换是可选的，但通常非常有用；
-* **标度** (scale)，将数据的取值映射到图形空间，例如用颜色、大小或形状来表示不同的取值。展现标度的常见做法是绘制图例和坐标轴--它们实际上是从图形到数据的一个映射，使读者可以从图形中读取原始的数据。标度负责控制映射后图形属性的显示方式。具体形式上来看是图例和坐标刻度。Scale和Mapping是紧密相关的概念。；
-* **坐标系** (Coordinate)，描述了数据是如何映射到图形所在的平面的，它同时提供了看图所需要的坐标轴和网格线，我们通常使用的是笛卡尔坐标系，但也可以将其变换为其他类型，如极坐标和地图投影；
-* **分面** (Facet)，如何将数据分解为各个子集，以及如何对子集作图并联合进行展示。分面也叫条件作图或网格作图。条件绘图，将数据按某种方式分组，然后分别绘图。分面就是控制分组绘图的方法和排列形式。
-
-
-### 图层
-
-一个图层(Layer)：
-1. 从 **数据** 到 **几何对象** （geometric object，缩写为geom，包括点、线、条形等）的 **图形属性** （aesthetic attributes，缩写为aes，包括颜色、形状、大小等）的一个映射。
-2. 图形中还可能包含数据的 **统计变换** （statistical transformation，缩写为stats）
-3. 最后绘制在某个 **坐标系** （coordinate system，缩写为soord）中
-4. **分面** （facet，指将绘图窗口划分为若干个子窗口）则可以用来生成数据不同子集的图形。
-
-### 图形
-
-图层之间的叠加用“+”，非常直观。
-一层一层的叠加图层，一张统计图形就画出来了。
-
-## 例子
-
-我们使用ggplot2自带的数据集mpg，它包含了1999年和2008年之间 EPA使上可用燃料经济性数据的一个子集等信息。它总共有234行，11列数据。
-
-```{r}
-mpg
-str(mpg)
-```
-
-
-```{r}
-library(ggplot2)
-gg <- ggplot(data = mpg)
-gg <- gg + geom_point(mapping = aes(x = cty, y = hwy))
-gg
-```
-
-想看下年份的影响：
-```{r}
-gg <- gg + aes(colour = factor(year))
-gg
-```
-
-还想看下displ的影响
-```{r}
-gg <- gg + aes(size = displ)
-gg
-```
-
-
-
-如果我们觉得这些点太小或者太大的时候，我们可以通过改变size的参数来调节散点的大小，一般使用方法是size=I（x）；这个I（）最好加上，否则有的时候会出现莫名奇怪的错误，有的时候不加也行，直接size=x也行，x为散点的大小，它一般按照使用者的经验或一次次试来确定大小的。
-
-
-```{r}
-ggplot(data=mpg,mapping = aes(x=cty,y=hwy))+geom_point(size=I(7))+aes(colour=factor(mpg$year))
-```
-
-我们也可以绘制出它的拟合曲线以及置信区间，它根据年份绘出了两条拟合曲线以及置信区间。
-```{r}
-ggplot(data=mpg,mapping = aes(x=cty,y=hwy))+geom_point()+aes(colour=factor(mpg$year))+stat_smooth()
-```
-
-
-
-[ggplot2在线帮助文档](http://had.co.nz/ggplot2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-# 安装
-
-```{r}
-if (!require(ggplot2)) {
-    install.packages(c("ggplot2"))
-}
-library(ggplot2)
-```
-
-# 基本图形
-
-## 常用图形概述
-
-图形大约有21种，按照数据维度来划分：
-
-一维数据：
-* 条形图
-* 直方图，histogram --，如果只有x参数，那么qplot就画这个，binwidth参数设定组距来调节平滑度，同样可以通过breaks来指定
-* 密度曲线，density，adjust参数控制曲线的平滑程度
-* geom = "freqploy"，频率多边形
-* geom = "bar"，绘制条形图，离散变量
-直方图和密度曲线这两种图可以展示单个变量的分布信息
-
-二维数据：
-* geom = "point"
-* geom = "smooth"
-* geom = "boxplot"
-* geom = "path"
-* geom = "line"
 
 
 
