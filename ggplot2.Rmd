@@ -76,8 +76,8 @@ ggplot2根据Leland Wilkinson的著作《Grammar of Graphics》，定义了一�
 
 * 数据（Data）和映射（Mapping），最基础的部分是你想要可视化的以及一系列将数据中的变量对应到图形属性的；
 * 几何对象（Geometric），代表你在图中实际看到的图形元素，如点、线、多边形等；
-* 标尺（Scale），将数据的取值映射到图形空间，例如用颜色、大小或形状来表示不同的取值。展现标度的常见做法是绘制图例和坐标轴--它们实际上是从图形到数据的一个映射，使读者可以从图形中读取原始的数据。标度负责控制映射后图形属性的显示方式。具体形式上来看是图例和坐标刻度。Scale和Mapping是紧密相关的概念；
 * 统计变换（Statistics），对数据进行的某种统计计算。例如，对二元散点图加上一条回归线或者置信区间登记，将数据分组计数以创建直方图，或将一个二维的关系用线性模型进行解释。统计变换是可选的，但通常非常有用；
+* 标尺（Scale），将数据的取值映射到图形空间，例如用颜色、大小或形状来表示不同的取值。展现标度的常见做法是绘制图例和坐标轴--它们实际上是从图形到数据的一个映射，使读者可以从图形中读取原始的数据。标度负责控制映射后图形属性的显示方式。具体形式上来看是图例和坐标刻度。Scale和Mapping是紧密相关的概念；
 * 坐标系统（Coordinate），描述了数据是如何映射到图形所在的平面的，它同时提供了看图所需要的坐标轴和网格线，我们通常使用的是笛卡尔坐标系，但也可以将其变换为其他类型，如极坐标和地图投影；
 * 图层（Layer）
 * 分面（Facet），如何将数据分解为各个子集，以及如何对子集作图并联合进行展示。分面也叫条件作图或网格作图。条件绘图，将数据按某种方式分组，然后分别绘图。分面就是控制分组绘图的方法和排列形式。
@@ -236,15 +236,24 @@ geom_tile       geom_violin
 geom_vline
 
 
-## 标尺（Scale）
-前面我们已经看到了，画图就是在做映射，不管是映射到不同的几何对象上，还是映射各种图形属性。这一小节介绍标尺，在对图形属性进行映射之后，使用标尺可以控制这些属性的显示方式，比如坐标刻度，可能通过标尺，将坐标进行对数变换；比如颜色属性，也可以通过标尺，进行改变。
-```{r}
-ggplot(small)+geom_point(aes(x=carat, y=price, shape=cut, colour=color))+scale_y_log10()+scale_colour_manual(values=rainbow(7))
-```
-
-以数据（Data）和映射（Mapping)一节中所画散点图为例，将Y轴坐标进行log10变换，再自己定义颜色为彩虹色。
 
 ## 统计变换（Statistics）
+
+先看个例子：
+```{r}
+ggplot(data = diamonds) + geom_bar(mapping = aes(x = cut))
+```
+
+```{r}
+ggplot(data = diamonds) + stat_count(mapping = aes(x = cut))
+```
+
+这两个图形一模一样。
+
+每个图形都有一个默认的统计变换，每个统计变换也有一个默认的图形。
+
+
+
 统计变换对原始数据进行某种计算，然后在图上表示出来，例如对散点图上加一条回归线。
 ```{r}
 ggplot(small, aes(x=carat, y=price))+geom_point()+scale_y_log10()+stat_smooth()
@@ -263,6 +272,14 @@ stat_binhex       stat_function     stat_spoke        stat_vline
 stat_boxplot      stat_hline        stat_sum          stat_ydensity
 
 统计变换是非常重要的功能，我们可以自己写函数，基于原始数据做某种计算，并在图上表现出来，也可以通过它改变geom_xxx函数画图的默认统计参数。
+
+## 标尺（Scale）
+前面我们已经看到了，画图就是在做映射，不管是映射到不同的几何对象上，还是映射各种图形属性。这一小节介绍标尺，在对图形属性进行映射之后，使用标尺可以控制这些属性的显示方式，比如坐标刻度，可能通过标尺，将坐标进行对数变换；比如颜色属性，也可以通过标尺，进行改变。
+```{r}
+ggplot(small)+geom_point(aes(x=carat, y=price, shape=cut, colour=color))+scale_y_log10()+scale_colour_manual(values=rainbow(7))
+```
+
+以数据（Data）和映射（Mapping)一节中所画散点图为例，将Y轴坐标进行log10变换，再自己定义颜色为彩虹色。
 
 
 ## 坐标系统（Coordinante）
